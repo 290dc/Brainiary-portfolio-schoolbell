@@ -1,148 +1,115 @@
-/*By Quvonchbek Rayxonov*/
-#include <Wire.h> 
+/* By Quvonchbek Rayxonov */
+#include <Wire.h>
 #include <LiquidCrystal_I2C.h>
-#include <virtuabotixRTC.h>                                                                              
+#include <virtuabotixRTC.h>
 
-LiquidCrystal_I2C lcd(0x27,16,2);  
+LiquidCrystal_I2C lcd(0x27, 16, 2);
 virtuabotixRTC myRTC(6, 7, 8);
 
-void setup()
-{
-  Serial.begin(9600);
-  pinMode(2, OUTPUT);
-  pinMode(3, INPUT);
-  lcd.init();                       
-  lcd.backlight();
-  /*myRTC.setDS1302Time(25, 52, 17, 2, 21, 11, 2025); dasturga shu kod orqali hozirgi
-  soatni arduinoga yuklanadi va uzmagan holda "myRTC.setDS1302Time(25, 52, 17, 2, 21, 11, 2025);"ni
-  o'chirib tashlab dastur qayta yuklanadi*/
-  // myRTC.setDS1302Time(25, 27, 11, 6, 22, 11, 2025); 
+// Qo‘ng‘iroq vaqtlarini massiv ko‘rinishida saqlaymiz
+int bellTimes[][2] = {
+  {8, 30},
+  {9, 15},
+  {9, 20},
+  {10, 5},
+  {10, 10},
+  {10, 55},
+  {11, 0},
+  {11, 45},
+  {12, 30},
+  {13, 15},
+  {13, 20},
+  {14, 5},
+  {14, 10},
+  {14, 55},
+  {15, 0},
+  {17, 0}
+};
 
+int bellCount = sizeof(bellTimes) / sizeof(bellTimes[0]);
+
+void setup() {
+  Serial.begin(9600);
+  pinMode(2, OUTPUT);   
+  pinMode(3, INPUT);    
+
+  lcd.init();
+  lcd.backlight();
+
+  // Bir marta vaqt o‘rnatiladi va ushbu kodni komentaryiaga olib yana kod yuklanadi:
+  // myRTC.setDS1302Time(25, 52, 17, 2, 21, 11, 2025);
 }
 
+void loop() {
+  myRTC.updateTime();
 
-void loop()
-{
-  myRTC.updateTime();   
+
   lcd.clear();
-  lcd.setCursor(0,0);
+  lcd.setCursor(0, 0);
+  lcd.print("Soat:");
   lcd.print(myRTC.hours);
+  lcd.print(":");
+  lcd.print(myRTC.minutes);
+  lcd.print(":");
+  lcd.print(myRTC.seconds);
+
+
   Serial.print(myRTC.hours);
   Serial.print(":");
-  lcd.print(':');
-  lcd.print(myRTC.minutes);
   Serial.print(myRTC.minutes);
   Serial.print(":");
-  lcd.print(':');
-  lcd.print(myRTC.seconds);
   Serial.println(myRTC.seconds);
+
   schoolbell();
-  if (digitalRead(3) == 1)
+  nextbell();
+
+  if (digitalRead(3) == 1) 
   {
-    Serial.println("yondi");
     digitalWrite(2, 1);
+    Serial.println("Qo'ng'iroq qo'lda yoqildi");
   }
-  delay(100);
+
+  delay(200);
 }
-void schoolbell()
+
+void schoolbell() 
 {
-  if (myRTC.hours == 8 && myRTC.minutes == 30 && myRTC.seconds > 0 && myRTC.seconds < 5 && myRTC.dayofweek > 0 && myRTC.dayofweek < 7) {
-  digitalWrite(2, 1);
-  delay(1000);
-  digitalWrite(2, 0);
-  delay(1000);
+  if (myRTC.dayofweek < 1 || myRTC.dayofweek > 6) return;
+
+  for (int i = 0; i < bellCount; i++) 
+  {
+    if (myRTC.hours == bellTimes[i][0] &&
+        myRTC.minutes == bellTimes[i][1] &&
+        myRTC.seconds >= 1 && myRTC.seconds <= 4) {
+
+      digitalWrite(2, HIGH);  
+      delay(1000);
+      digitalWrite(2, LOW);
+      delay(1000);
+    }
   }
-  if (myRTC.hours == 9 && myRTC.minutes == 15 && myRTC.seconds > 0 && myRTC.seconds < 5 && myRTC.dayofweek > 0 && myRTC.dayofweek < 7) {
-  digitalWrite(2, 1);
-  delay(1000);
-  digitalWrite(2, 0);
-  delay(1000);
+}
+void nextbell()
+{
+  if (myRTC.dayofweek < 1 || myRTC.dayofweek > 6) return;
+  if (myRTC.hours >= 17) 
+  {
+    lcd.setCursor(0, 1);
+    lcd.print("Keyingi:08:30:00");
   }
-  if (myRTC.hours == 9 && myRTC.minutes == 20 && myRTC.seconds > 0 && myRTC.seconds < 5 && myRTC.dayofweek > 0 && myRTC.dayofweek < 7) {
-  digitalWrite(2, 1);
-  delay(1000);
-  digitalWrite(2, 0);
-  delay(1000);
-  }
-  if (myRTC.hours == 10 && myRTC.minutes == 5 && myRTC.seconds > 0 && myRTC.seconds < 5 && myRTC.dayofweek > 0 && myRTC.dayofweek < 7) {
-  digitalWrite(2, 1);
-  delay(1000);
-  digitalWrite(2, 0);
-  delay(1000);
-  }
-  if (myRTC.hours == 10 && myRTC.minutes == 10 && myRTC.seconds > 0 && myRTC.seconds < 5 && myRTC.dayofweek > 0 && myRTC.dayofweek < 7) {
-  digitalWrite(2, 1);
-  delay(1000);
-  digitalWrite(2, 0);
-  delay(1000);
-  }
-  if (myRTC.hours == 10 && myRTC.minutes == 55 && myRTC.seconds > 0 && myRTC.seconds < 5 && myRTC.dayofweek > 0 && myRTC.dayofweek < 7) {
-  digitalWrite(2, 1);
-  delay(1000);
-  digitalWrite(2, 0);
-  delay(1000);
-  }
-  if (myRTC.hours == 11 && myRTC.minutes == 0 && myRTC.seconds > 0 && myRTC.seconds < 5 && myRTC.dayofweek > 0 && myRTC.dayofweek < 7) {
-  digitalWrite(2, 1);
-  delay(1000);
-  digitalWrite(2, 0);
-  delay(1000);
-  }
-  if (myRTC.hours == 11 && myRTC.minutes == 45 && myRTC.seconds > 0 && myRTC.seconds < 5 && myRTC.dayofweek > 0 && myRTC.dayofweek < 7) {
-  digitalWrite(2, 1);
-  delay(1000);
-  digitalWrite(2, 0);
-  delay(1000);
-  }
-  if (myRTC.hours == 12 && myRTC.minutes == 30 && myRTC.seconds > 0 && myRTC.seconds < 5 && myRTC.dayofweek > 0 && myRTC.dayofweek < 6) {
-  digitalWrite(2, 1);
-  delay(1000);
-  digitalWrite(2, 0);
-  delay(1000);
-  }
-  if (myRTC.hours == 13 && myRTC.minutes == 15 && myRTC.seconds > 0 && myRTC.seconds < 5 && myRTC.dayofweek > 0 && myRTC.dayofweek < 6) {
-  digitalWrite(2, 1);
-  delay(1000);
-  digitalWrite(2, 0);
-  delay(1000);
-  }
-  if (myRTC.hours == 13 && myRTC.minutes == 20 && myRTC.seconds > 0 && myRTC.seconds < 5 && myRTC.dayofweek > 0 && myRTC.dayofweek < 6) {
-  digitalWrite(2, 1);
-  delay(1000);
-  digitalWrite(2, 0);
-  delay(1000);
-  }
-  if (myRTC.hours == 14 && myRTC.minutes == 5 && myRTC.seconds > 0 && myRTC.seconds < 5 && myRTC.dayofweek > 0 && myRTC.dayofweek < 6) {
-  digitalWrite(2, 1);
-  delay(1000);
-  digitalWrite(2, 0);
-  delay(1000);
-  }
-  if (myRTC.hours == 14 && myRTC.minutes == 10 && myRTC.seconds > 0 && myRTC.seconds < 5 && myRTC.dayofweek > 0 && myRTC.dayofweek < 6) {
-  digitalWrite(2, 1);
-  delay(1000);
-  digitalWrite(2, 0);
-  delay(1000);
-  }
-  if (myRTC.hours == 14 && myRTC.minutes == 55 && myRTC.seconds > 0 && myRTC.seconds < 5 && myRTC.dayofweek > 0 && myRTC.dayofweek < 6) {
-  digitalWrite(2, 1);
-  delay(1000);
-  digitalWrite(2, 0);
-  delay(1000);
-  }
-  if (myRTC.hours == 15 && myRTC.minutes == 0 && myRTC.seconds > 0 && myRTC.seconds < 5 && myRTC.dayofweek > 0 && myRTC.dayofweek < 6) {
-  digitalWrite(2, 1);
-  delay(1000);
-  digitalWrite(2, 0);
-  delay(1000);
-  }
-  if (myRTC.hours == 17 && myRTC.minutes == 0 && myRTC.seconds > 0 && myRTC.seconds < 5 && myRTC.dayofweek > 0 && myRTC.dayofweek < 6) {
-  digitalWrite(2, 1);
-  delay(1000);
-  digitalWrite(2, 0);
-  delay(1000);
-  }
-  else {
-  digitalWrite(2, 0);
+  for (int i = 0; i < bellCount; i++) 
+  {
+    if (myRTC.hours < bellTimes[i][0] ||
+        myRTC.hours == bellTimes[i][0]  && myRTC.minutes < bellTimes[i][1]) 
+        {
+          lcd.setCursor(0, 1);
+          lcd.print("Keyingi:");
+          if (bellTimes[i][0] < 10) lcd.print("0");
+          lcd.print(bellTimes[i][0]);
+          lcd.print(":");
+          if (bellTimes[i][1] < 10) lcd.print("0");
+          lcd.print(bellTimes[i][1]);
+          lcd.print(":00");
+        }
   }
 }
